@@ -74,7 +74,7 @@ def main():
         pass
 
 
-def step_one_train(train_loader, model, criterion, optimizer, epoch, args):
+def step_one_train(train_loader, model, criterion, optimizer, epoch, args, device):
     batch_time = AverageMeter("Time", ":6.3f")
     data_time = AverageMeter("Data", ":6.3f")
     losses = AverageMeter("Loss", ":.4e")
@@ -90,8 +90,32 @@ def step_one_train(train_loader, model, criterion, optimizer, epoch, args):
 
     end = time.time()
 
-    for i, (images, _) in enumerate(train_loader):
-        pass
+    for i, images_ in enumerate(train_loader):
+        data_time.update(time.time() - end)
+        input_q = images_["img_q"].to(device)
+        input_k = images_["img_k"].to(device)
+
+        output, target = model(im_q=input_q, im_k=input_k)
+        loss = criterion(output, target)
+
+        # acc1/acc5 are (K+1)-way contrast classifier accuracy
+        # measure accuracy and record loss
+        acc1, acc5 = accuracy(output, target, topk=(1, 5))
+        losses.update(loss.item(), input_q.size(0))
+        top1.update(acc1[0], input_q.size(0))
+        top5.update(acc5[0], input_q.size(0))
+
+        # compute gradient and do SGD step
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if i % args.print_freq == 0:
+            progress.display(i)
 
 
 if __name__ == "__main__":
