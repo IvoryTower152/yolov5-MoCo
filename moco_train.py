@@ -33,6 +33,8 @@ def get_parser():
     parser.add_argument("--start-epoch", type=int, default=0, help="manual epoch number (useful on restarts)")
     parser.add_argument("--batch-size", type=int, default=8, help="mini batch")
     parser.add_argument("--lr", type=float, default=0.03)
+    parser.add_argument("--momentum", type=float, default=0.9, metavar="M", help="momentum of SGD solver")
+    parser.add_argument("--weight-decay", type=float, default=1e-4, help="weight decay (default: 1e-4)",)
     parser.add_argument("--device", default="0", help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
     args = parser.parse_args()
     return args
@@ -41,8 +43,21 @@ def get_parser():
 def main():
     args = get_parser()
     device = select_device(args.device)
+
     print(">>> Creating Model <<<")
     model = moco.builder.MoCo(Model)
+    model = model.to(device)
+
+    criterion = nn.CrossEntropyLoss().to(device)
+
+    optimizer = torch.optim.SGD(
+        model.parameters(),
+        args.lr,
+        momentum=args.momentum,
+        weight_decay=args.weight_decay,
+    )
+
+    print(">>> Data Loading <<<")
 
 
 if __name__ == "__main__":
