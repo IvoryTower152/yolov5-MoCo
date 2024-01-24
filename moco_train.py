@@ -24,7 +24,7 @@ import torchvision.transforms as transforms
 
 from utils.torch_utils import select_device
 from models.mocoBuilder import Model
-from moco.utils import AverageMeter, ProgressMeter, adjust_learning_rate, accuracy
+from moco.utils import AverageMeter, ProgressMeter, adjust_learning_rate, accuracy, save_checkpoint
 
 
 def get_parser():
@@ -39,6 +39,7 @@ def get_parser():
     parser.add_argument("--weight-decay", type=float, default=1e-4, help="weight decay (default: 1e-4)",)
     parser.add_argument("--device", default="0", help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
     parser.add_argument("--workers", default=8, type=int, help="number of data loading workers (default: 32)")
+    parser.add_argument("--save_path", type=str, default="", help="dataset path")
     args = parser.parse_args()
     return args
 
@@ -71,7 +72,17 @@ def main():
 
     print(">>> Training <<<")
     for epoch in range(args.start_epoch, args.epoch):
-        pass
+        step_one_train(train_loader, model, criterion, optimizer, epoch, args, device)
+
+        save_checkpoint(
+            {
+                "epoch": epoch + 1,
+                "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+            },
+            is_best=False,
+            filename=os.path.join(args.save_path, "checkpoint_{:04d}.pt".format(epoch))
+        )
 
 
 def step_one_train(train_loader, model, criterion, optimizer, epoch, args, device):
