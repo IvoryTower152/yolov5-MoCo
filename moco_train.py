@@ -29,6 +29,7 @@ from models.mocoBuilder import Model
 def get_parser():
     parser = argparse.ArgumentParser(description="PyTorch SID RAW Training")
     parser.add_argument("--dataset_path", type=str, default="", help="dataset path")
+    parser.add_argument("--pair_list", type=str, default="", help="dataset path")
     parser.add_argument("--epochs", type=int, default=200, help="number of total epochs to run")
     parser.add_argument("--start-epoch", type=int, default=0, help="manual epoch number (useful on restarts)")
     parser.add_argument("--batch-size", type=int, default=8, help="mini batch")
@@ -36,6 +37,7 @@ def get_parser():
     parser.add_argument("--momentum", type=float, default=0.9, metavar="M", help="momentum of SGD solver")
     parser.add_argument("--weight-decay", type=float, default=1e-4, help="weight decay (default: 1e-4)",)
     parser.add_argument("--device", default="0", help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
+    parser.add_argument("--workers", default=8, type=int, help="number of data loading workers (default: 32)")
     args = parser.parse_args()
     return args
 
@@ -58,6 +60,21 @@ def main():
     )
 
     print(">>> Data Loading <<<")
+    train_set = moco.loader.MoCoData(args.dataset_path, args.piar_list)
+    train_loader = torch.utils.data.DataLoader(
+        train_set,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=args.workers
+    )
+
+    print(">>> Training <<<")
+    for epoch in range(args.start_epoch, args.epoch):
+        pass
+
+
+def step_one_train(train_loader, model, criterion, optimizer, epoch, args):
+    pass
 
 
 if __name__ == "__main__":
